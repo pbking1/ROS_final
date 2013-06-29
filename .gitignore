@@ -1,0 +1,7 @@
+*.py[co]
+*.sw[po]
+__pycache__/
+*.xcf
+backup
+*.aux
+*.log
