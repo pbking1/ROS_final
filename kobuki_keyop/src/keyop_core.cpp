@@ -353,8 +353,8 @@ void KeyOpCore::processKeyboardInput(char c)
    * esc-[-D) we can keep the parsing simple.
    */
   ecl::MilliSleep millisleep;
-  const int TT = 30;
-  const int loopforC = 60;
+  const int TT = 1;
+  const int loopforC = 30;
   switch (c)
   {
     case kobuki_msgs::KeyboardInput::KeyCode_Left:
@@ -379,75 +379,68 @@ void KeyOpCore::processKeyboardInput(char c)
     }
     case kobuki_msgs::KeyboardInput::KeyCode_Space:
     {
-      resetVelocity();
-      break;
+        resetVelocity();
+        break;
     }
     case 'j':
     {
         puts("input j");
-      //  jflag = 1;
-      for (int j=0;j<loopforC;j++)
-        incrementAngularVelocity();
-        //int t = time(0);
-        //while (t == time(0));
-        millisleep (TT);
+        for (int j=0;j<loopforC;j++){
+            incrementAngularVelocity();
+            millisleep (TT);
+        }
         resetVelocity();
         break;
     }
     case 'k':
     {
         puts("input k");
-      //  kflag = 1;
-      for (int j=0;j<loopforC;j++)
-        decrementLinearVelocity();
-        //int t = time(0);
-        //while (t == time(0));
-        millisleep(TT);
+        for (int j=0;j<loopforC;j++) {
+            decrementLinearVelocity();
+            millisleep(TT);
+        }
         resetVelocity();
         break;
     }
     case 'l':
     {
         puts("input l");
-        lflag = 1;
-      for (int j=0;j<loopforC;j++)
-        decrementAngularVelocity();
-        //int t = time(0);
-        //while (t == time(0));
-        millisleep(TT);
+        for (int j=0;j<loopforC;j++) {
+            decrementAngularVelocity();
+            millisleep(TT);
+        }
         resetVelocity();
         break;
     }
     case 'i':
     {
         puts("input i");
-        iflag = 1;
-      for (int j=0;j<loopforC;j++)
-        incrementLinearVelocity();
-        //int t = time(0);
-        //while (t == time(0));
-        millisleep(TT);
+        for (int j=0;j<loopforC;j++) {
+            cmd->linear.x = 3;
+            incrementLinearVelocity();
+            millisleep(TT);
+        }
         resetVelocity();
         break;
     }
     case 'q':
     {
-      quit_requested = true;
-      break;
+        quit_requested = true;
+        break;
     }
     case 'd':
     {
-      disable();
-      break;
+        disable();
+        break;
     }
     case 'e':
     {
-      enable();
-      break;
+        enable();
+        break;
     }
     default:
     {
-      break;
+        break;
     }
   }
 }
@@ -465,23 +458,23 @@ void KeyOpCore::processKeyboardInput(char c)
  */
 void KeyOpCore::disable()
 {
-  cmd->linear.x = 0.0;
-  cmd->angular.z = 0.0;
-  velocity_publisher_.publish(cmd);
-  accept_incoming = false;
+    cmd->linear.x = 0.0;
+    cmd->angular.z = 0.0;
+    velocity_publisher_.publish(cmd);
+    accept_incoming = false;
 
-  if (power_status)
-  {
-    ROS_INFO("KeyOp: die, die, die (disabling power to the device's motor system).");
-    kobuki_msgs::MotorPower power_cmd;
-    power_cmd.state = kobuki_msgs::MotorPower::OFF;
-    motor_power_publisher_.publish(power_cmd);
-    power_status = false;
-  }
-  else
-  {
-    ROS_WARN("KeyOp: Motor system has already been powered down.");
-  }
+    if (power_status)
+    {
+        ROS_INFO("KeyOp: die, die, die (disabling power to the device's motor system).");
+        kobuki_msgs::MotorPower power_cmd;
+        power_cmd.state = kobuki_msgs::MotorPower::OFF;
+        motor_power_publisher_.publish(power_cmd);
+        power_status = false;
+    }
+    else
+    {
+        ROS_WARN("KeyOp: Motor system has already been powered down.");
+    }
 }
 
 /**
@@ -492,24 +485,24 @@ void KeyOpCore::disable()
  */
 void KeyOpCore::enable()
 {
-  accept_incoming = false;
+    accept_incoming = false;
 
-  cmd->linear.x = 0.0;
-  cmd->angular.z = 0.0;
-  velocity_publisher_.publish(cmd);
+    cmd->linear.x = 0.0;
+    cmd->angular.z = 0.0;
+    velocity_publisher_.publish(cmd);
 
-  if (!power_status)
-  {
-    ROS_INFO("KeyOp: Enabling power to the device subsystem.");
-    kobuki_msgs::MotorPower power_cmd;
-    power_cmd.state = kobuki_msgs::MotorPower::ON;
-    motor_power_publisher_.publish(power_cmd);
-    power_status = true;
-  }
-  else
-  {
-    ROS_WARN("KeyOp: Device has already been powered up.");
-  }
+    if (!power_status)
+    {
+        ROS_INFO("KeyOp: Enabling power to the device subsystem.");
+        kobuki_msgs::MotorPower power_cmd;
+        power_cmd.state = kobuki_msgs::MotorPower::ON;
+        motor_power_publisher_.publish(power_cmd);
+        power_status = true;
+    }
+    else
+    {
+        ROS_WARN("KeyOp: Device has already been powered up.");
+    }
 }
 
 /**
@@ -517,18 +510,18 @@ void KeyOpCore::enable()
  */
 void KeyOpCore::incrementLinearVelocity()
 {
-  if (power_status)
-  {
-    if (cmd->linear.x <= linear_vel_max)
+    if (power_status)
     {
-      cmd->linear.x += linear_vel_step;
+        if (cmd->linear.x <= linear_vel_max)
+        {
+            cmd->linear.x += linear_vel_step;
+        }
+        ROS_INFO_STREAM("KeyOp: linear  velocity incremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
     }
-    ROS_INFO_STREAM("KeyOp: linear  velocity incremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
-  }
-  else
-  {
-    ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
-  }
+    else
+    {
+        ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
+    }
 }
 
 /**
@@ -536,18 +529,18 @@ void KeyOpCore::incrementLinearVelocity()
  */
 void KeyOpCore::decrementLinearVelocity()
 {
-  if (power_status)
-  {
-    if (cmd->linear.x >= -linear_vel_max)
+    if (power_status)
     {
-      cmd->linear.x -= linear_vel_step;
+        if (cmd->linear.x >= -linear_vel_max)
+        {
+            cmd->linear.x -= linear_vel_step;
+        }
+        ROS_INFO_STREAM("KeyOp: linear  velocity decremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
     }
-    ROS_INFO_STREAM("KeyOp: linear  velocity decremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
-  }
-  else
-  {
-    ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
-  }
+    else
+    {
+        ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
+    }
 }
 
 /**
@@ -555,18 +548,18 @@ void KeyOpCore::decrementLinearVelocity()
  */
 void KeyOpCore::incrementAngularVelocity()
 {
-  if (power_status)
-  {
-    if (cmd->angular.z <= angular_vel_max)
+    if (power_status)
     {
-      cmd->angular.z += angular_vel_step;
+        if (cmd->angular.z <= angular_vel_max)
+        {
+            cmd->angular.z += angular_vel_step;
+        }
+        ROS_INFO_STREAM("KeyOp: angular velocity incremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
     }
-    ROS_INFO_STREAM("KeyOp: angular velocity incremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
-  }
-  else
-  {
-    ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
-  }
+    else
+    {
+        ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
+    }
 }
 
 /**
@@ -574,32 +567,32 @@ void KeyOpCore::incrementAngularVelocity()
  */
 void KeyOpCore::decrementAngularVelocity()
 {
-  if (power_status)
-  {
-    if (cmd->angular.z >= -angular_vel_max)
+    if (power_status)
     {
-      cmd->angular.z -= angular_vel_step;
+        if (cmd->angular.z >= -angular_vel_max)
+        {
+            cmd->angular.z -= angular_vel_step;
+        }
+        ROS_INFO_STREAM("KeyOp: angular velocity decremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
     }
-    ROS_INFO_STREAM("KeyOp: angular velocity decremented [" << cmd->linear.x << "|" << cmd->angular.z << "]");
-  }
-  else
-  {
-    ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
-  }
+    else
+    {
+        ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
+    }
 }
 
 void KeyOpCore::resetVelocity()
 {
-  if (power_status)
-  {
-    cmd->angular.z = 0.0;
-    cmd->linear.x = 0.0;
-    ROS_INFO_STREAM("KeyOp: reset linear/angular velocities.");
-  }
-  else
-  {
-    ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
-  }
+    if (power_status)
+    {
+        cmd->angular.z = 0.0;
+        cmd->linear.x = 0.0;
+        ROS_INFO_STREAM("KeyOp: reset linear/angular velocities.");
+    }
+    else
+    {
+        ROS_WARN_STREAM("KeyOp: motors are not yet powered up.");
+    }
 }
 
 } // namespace keyop_core
